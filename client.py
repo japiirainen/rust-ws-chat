@@ -26,4 +26,56 @@ async def start_client(url, loop):
     loop.add_reader(sys.stdin, stdin_callback)
 
     async def dispatch():
-        return False
+        while True:
+            msg = await ws.recieve()
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                print(f"Recieved text: {msg.data.strip()}")
+            elif msg.type == aiohttp.WSMsgType.BINARY:
+                print(f"Recieved binary: {msg.data}")
+            elif msg.type == aiohttp.WSMsgType.PING:
+                print("Pong recieved")
+            else:
+                if msg.type == aiohttp.WSMsgType.CLOSE:
+                    await ws.close()
+                elif msg.type == aiohttp.WSMsgType.ERROR:
+                    print("Recieved error %s" % ws.exception())
+                elif msg.type == aiohttp.WSMsgType.CLOSED:
+                    pass
+                break
+
+    await dispatch()
+
+
+async def tick():
+    while True:
+        await (await queue.get())
+
+
+async def main(url, loop):
+    await asyncio.wait([start_client(url, loop), tick()])
+
+
+ARGS = argparse.ArgumentParser(
+    description="WS console client fo rs-ws-chat."
+)
+ARGS.add_argument(
+    '--host', action="store", dest="host",
+    default="127.0.0.1", help="Host name"
+)
+ARGS.add_argument(
+    '--port', action="store", dest="port",
+    default=8080, help="Port number"
+)
+
+if __name__ == 'main':
+    args = ARGS.parse_args()
+    if ':' in args.host:
+        args.host, port = args.host.split(':', 1)
+        args.port = int(port)
+
+    url = 'https://{}:{}/ws/'.format(args.host, args.port)
+
+    loop = asyncio.get_event_loop()
+    loop.add_signal_handler(signal.SIGINT, loop.stop)
+    asyncio.Task(main(url, loop))
+    loop.run_forever()
