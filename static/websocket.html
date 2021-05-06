@@ -17,6 +17,7 @@
         }
 
         const connect = () => {
+          console.log('here')
           disconnect()
 
           const wsUri =
@@ -45,11 +46,13 @@
         }
 
         const disconnect = () => {
-          log('Disconnecting...')
-          conn.close()
-          conn = null
+          if (conn) {
+            log('Disconnecting...')
+            conn.close()
+            conn = null
 
-          update_ui()
+            update_ui()
+          }
         }
 
         const update_ui = () => {
@@ -62,7 +65,7 @@
           }
         }
 
-        btn_connect.onClick = () => {
+        btn_connect.onclick = () => {
           if (!conn) {
             connect()
           } else {
@@ -72,7 +75,7 @@
           update_ui()
         }
 
-        btn_send.onClick = () => {
+        btn_send.onclick = () => {
           if (!conn) return
 
           const text = input_text.value

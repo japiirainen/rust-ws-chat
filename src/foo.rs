@@ -104,7 +104,11 @@ impl Handler<server::Message> for WsChatSession {
 
 /// WebSocket message handler
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
-    fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
+    fn handle(
+        &mut self,
+        msg: Result<ws::Message, ws::ProtocolError>,
+        ctx: &mut Self::Context,
+    ) {
         let msg = match msg {
             Err(_) => {
                 ctx.stop();
@@ -254,7 +258,7 @@ async fn main() -> std::io::Result<()> {
             // static resources
             .service(fs::Files::new("/static/", "static/"))
     })
-    .bind("127.0.0.1:8090")?
+    .bind("127.0.0.1:8080")?
     .run()
     .await
 }
