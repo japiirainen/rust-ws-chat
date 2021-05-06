@@ -53,7 +53,11 @@ async def tick():
 
 
 async def main(url, loop):
-    await asyncio.wait([start_client(url, loop), tick()])
+
+    await asyncio.wait([
+        asyncio.create_task(start_client(url, loop)),
+        asyncio.create_task(tick())
+    ])
 
 
 ARGS = argparse.ArgumentParser(
